@@ -1,0 +1,497 @@
+<html>
+<head>
+<style>
+#gc{
+  width:100%;
+  height:100%;
+}
+html, body {
+  width:  100%;
+  height: 100%;
+  margin: 0;
+}
+</style>
+</head>
+<body>
+
+<canvas id="gc"></canvas>
+<script>
+    cat = {
+        still:[], // Stores array of still frames
+        walk:[], // Stores array of walking frames
+        jump:[], // Stores array of jump frames
+        fall:[], // stores array of fall frames
+        slide:[], // Stores array of sliding frames
+        frame:0, // Stores which frame is to be displayed
+        x:0,
+        y:415,
+        height:271,
+        width:250,
+        speedx:0,
+        speedy:0,
+        direction:1, // 1=right, 2=left
+        movement:[0,0,0,0], // [a, s, d, w]
+    }
+
+    forest_scene = {
+      layers:[],
+      char_layer:0,
+      height:1856,
+      width:1584,
+      floor:415,
+    };
+
+    mouse = {
+      x:-99999,
+      y:-99999,
+      waiting:false,
+    };
+
+    window.onload = function(){
+        scene = forest_scene;
+        loadCharacterAnimations("cat", cat); // Load Cat animations
+        loadScene("forest", 2, forest_scene); // Load Forest Scene
+        ui = {
+          arrow: new Image(),
+        };
+
+        ui.arrow.src = "webp/arrow/arrow.webp";
+
+        c=document.getElementById("gc");
+        cc=c.getContext('2d');
+        setInterval(update, 1000/30);
+
+        //Update Canvas Size
+        cc.canvas.width  = window.innerWidth;
+        cc.canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', function(){
+          //Update Canvas Size
+          cc.canvas.width  = window.innerWidth;
+          cc.canvas.height = window.innerHeight;
+        }, false);
+
+        document.addEventListener('keydown', function(e){
+            if (e.key == "a") {
+              if(!cat.movement[0]) // Left
+              {
+                  cat.movement[0]=1;
+                  cat.direction = 2;
+              }
+            } else if(e.key == "s"){ // Down
+              if(!cat.movement[1])
+              {
+                  cat.movement[1]=1;
+              }
+            } else if(e.key == "d"){ // Right
+              if(!cat.movement[2])
+              {
+                  cat.movement[2]=1;
+                  cat.direction = 1;
+              }
+            } else if (e.key == "w"){ // Up
+              if(!cat.movement[3])
+              {
+                  cat.movement[3]=1;
+              }
+            }
+        });
+        document.addEventListener('keyup', function(e){
+            if (e.key == "a") { // Left
+              if(cat.movement[0])
+              {
+                  cat.movement[0] = 0;
+              }
+            } else if(e.key == "s"){ //  Down
+              if(cat.movement[1])
+              {
+                  cat.movement[1] = 0;
+              }
+            } else if(e.key == "d"){ // Right
+              if(cat.movement[2])
+              {
+                  cat.movement[2] = 0;
+              }
+            } else if (e.key == "w"){ // Down
+              if(cat.movement[3]) {
+                  cat.movement[3] = 0;
+              }
+            }
+        });
+
+        c.addEventListener('mousedown', (e) => {
+
+          mouse.x = e.clientX;
+          mouse.y = e.clientY;
+
+        });
+        c.addEventListener('mouseup', (e)=>{
+          mouse.x = -99999;
+          mouse.y = -99999;
+
+        })
+        c.addEventListener('touchstart', (e) => {
+          console.log("Touch Start");
+          mouse.x = e.touches[0].pageX
+          mouse.y = e.touches[0].pageY;
+
+        });
+        c.addEventListener('touchend', (e)=>{
+          console.log("Touch End");
+          mouse.x = -99999;
+          mouse.y = -99999;
+
+        })
+    }
+
+
+    function loadCharacterAnimations(name, object){
+        /*
+        Loads animations from webp folder based on object name.These animations are
+        loaded into the object under the animations key.
+
+        Only Loads 2 types of animations, still and walk
+
+        name: animation name
+        layers: number of layers to be loaded
+        object: object to load animations into
+        */
+        folder = "webp/"+name+"/";
+        for (i=1; i <= 10; i++){
+            object.still[i-1] = new Image();
+            object.still[i-1].src = folder + "Idle (" + i + ").webp";
+        }
+        for (i=1; i <= 10; i++){
+            object.walk[i-1] = new Image();
+            object.walk[i-1].src = folder + "Walk (" + i + ").webp";
+        }
+        for (i=1; i <= 8; i++){
+            object.jump[i-1] = new Image();
+            object.jump[i-1].src = folder + "Jump (" + i + ").webp";
+        }
+        for (i=1; i <= 8; i++){
+            object.fall[i-1] = new Image();
+            object.fall[i-1].src = folder + "Fall (" + i + ").webp";
+        }
+        for (i=1; i <= 10; i++){
+            object.slide[i-1] = new Image();
+            object.slide[i-1].src = folder + "Slide (" + i + ").webp";
+        }
+    }
+    function loadScene(scene, layers, object){
+      /*
+      Loads layers webp folder based on object name. These layers are loaded into the object.
+
+
+      name: scene name
+      layers: number of layers to be loaded
+      object: object to load animations into
+
+      */
+      folder = "webp/"+scene+"/";
+      for (i=0; i <= layers-1; i++){
+          object.layers[i] = new Image();
+          object.layers[i].src = folder+ "Layer_" + i + ".webp";
+      }
+    }
+
+
+    function update(){
+      /*
+      Updates the canvas based on a set interval
+
+      */
+
+      /*******************************
+      * Mouse Update                 *
+      ********************************/
+
+      if (mouse.y != -99999) {
+        if (mouse.x >= 0 && mouse.y >= c.height-(c.height/6) && mouse.x <= c.height/6 && mouse.y <= c.height){
+
+          cat.movement[0] = 1;
+          cat.direction = 2;
+
+        } else if (mouse.x >= c.width-c.height/6 && mouse.y >= c.height-(c.height/6) && mouse.x <= c.width && mouse.y <= c.height){
+
+          cat.movement[2] = 1;
+          cat.direction = 1;
+
+        } else {
+          console.log(mouse.x);
+          console.log(mouse.y);
+          console.log(mouse.x >= 0);
+          console.log(mouse.y >= c.height-(c.height/6));
+          console.log(mouse.x <= c.height/6);
+          console.log(mouse.y <= c.height);
+        }
+        mouse.waiting = true;
+      } else if (mouse.waiting){
+        cat.movement = [0,0,0,0];
+        mouse.waiting = false;
+      }
+
+      /*******************************
+      * Movement Functions           *
+      ********************************/
+      if(cat.movement[0]){ // Moves Character Left
+        if(!(cat.movement[1] == 1 && cat.y == scene.floor)){
+
+          cat.speedx = -8;
+
+        }
+      }
+
+      if(cat.movement[2]){ // Moves character right
+          if(!(cat.movement[1] && cat.x == scene.floor)){
+
+            cat.speedx = 8;
+
+          }
+      }
+
+      if(cat.movement[3]){ // jump if the character is on the ground
+          if (cat.speedy == 0 && cat.y == scene.floor)
+          {
+            cat.frame = 0;
+            cat.speedy = 8; //set initial upward speed
+            cat.y = 416; // set y coordinate to 1 more so the program doesn't force the character on the ground
+
+          }
+      }
+
+      /*******************************
+      * Y axis manipulation          *
+      ********************************/
+      if (cat.y > scene.floor) { // If the character is in the air increase speed towards ground and lower character
+
+        // update speedy and y
+        cat.speedy = cat.speedy - 0.5;
+        cat.y += cat.speedy;
+
+      } else if(cat.y != scene.floor){
+
+        //Reset speedy and y
+        cat.speedy = 0;
+        cat.y=scene.floor;
+
+      }
+
+      /*******************************
+      * X axis manipulation          *
+      ********************************/
+      if (cat.x > cc.canvas.width){
+
+        cat.x = -1*cat.width;
+
+      } else if(cat.x < -1.01*cat.width) {
+
+        cat.x = cc.canvas.width;
+
+      }
+
+      if (cat.speedx > 0.01 || cat.speedx < -0.01){
+
+        cat.x += cat.speedx; // Update catx
+
+        if (cat.y == scene.floor){
+          if(cat.movement[1]){ // If the cat is sliding
+
+            cat.speedx *= 0.99;
+
+          } else {
+
+            cat.speedx *= 0.78; // Slowdown from floor
+
+          }
+        } else {
+
+          cat.speedx *= 0.95; // Slowdown from air friction
+
+        }
+      } else if (cat.speedx != 0){ // if the speedx is small enough, set it to 0
+
+        cat.speedx = 0;
+
+      }
+
+      cc.clearRect(0, 0, c.width, c.height); // Clear canvas
+
+      for (i = 1; i>=0; i--){ // display each layer, placing the character at layer 3
+
+        if (i==scene.char_layer){ // Determines which layer the character will be displayed
+
+          if (cat.speedy >= 0 && cat.y != scene.floor){
+
+            /*******************************
+            * Character is jumping         *
+            ********************************/
+            if (cat.frame>=7){ // Reset frame counter
+
+                cat.frame = 7;
+
+            } else { // update frame counter
+
+                cat.frame++;
+
+            }
+            if (cat.direction==1){ // Facing Right
+                // draw the character
+                cc.drawImage(cat.jump[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
+
+            } else { // Facing Left
+
+                cc.save();
+                // Flip the character image
+                cc.translate(cat.x + cat.width/2, 0);
+                cc.scale(-1, 1);
+                cc.translate(-(cat.x + cat.width/2), 0);
+                //Draw the character
+                cc.drawImage(cat.jump[cat.frame],cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
+                cc.restore();
+
+            }
+
+          } else if (cat.speedy < 0){
+            if (cat.frame>=7){ // Reset frame counter
+
+                cat.frame = 7;
+
+            } else { // update frame counter
+
+                cat.frame++;
+
+            }
+            if (cat.direction==1){ // Facing Right
+
+                // draw the character
+                cc.drawImage(cat.fall[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
+
+            } else { // Facing Left
+
+                cc.save();
+                // Flip the character image
+                cc.translate(cat.x + cat.width/2, 0);
+                cc.scale(-1, 1);
+                cc.translate(-(cat.x + cat.width/2), 0);
+                //Draw the character
+                cc.drawImage(cat.fall[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
+                cc.restore();
+
+            }
+          } else if (cat.movement[1]){
+            /*******************************
+            * Character is sliding          *
+            ********************************/
+            if (cat.frame==9){ // Reset frame counter
+
+                cat.frame = 0;
+
+            } else { // update frame counter
+
+                cat.frame++;
+
+            }
+            if (cat.direction==1){ // Facing Right
+                // draw the character
+                cc.drawImage(cat.slide[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
+
+            } else { // Facing Left
+
+                cc.save();
+                // Flip the character image
+                cc.translate(cat.x + cat.width/2, 0);
+                cc.scale(-1, 1);
+                cc.translate(-(cat.x + cat.width/2), 0);
+                //Draw the character
+                cc.drawImage(cat.slide[cat.frame],cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
+                cc.restore();
+
+            }
+          } else if (cat.y == scene.floor && cat.movement[0] != 0 || cat.movement[2] != 0){
+
+            /*******************************
+            * Character is walking          *
+            ********************************/
+            if (cat.frame==9){ // Reset frame counter
+
+                cat.frame = 0;
+
+            } else { // update frame counter
+
+                cat.frame++;
+
+            }
+            if (cat.direction==1){ // Facing Right
+                // draw the character
+                cc.drawImage(cat.walk[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
+
+            } else { // Facing Left
+
+                cc.save();
+                // Flip the character image
+                cc.translate(cat.x + cat.width/2, 0);
+                cc.scale(-1, 1);
+                cc.translate(-(cat.x + cat.width/2), 0);
+                //Draw the character
+                cc.drawImage(cat.walk[cat.frame],cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
+                cc.restore();
+
+
+            }
+          } else {
+              /*******************************
+              * Character is still           *
+              ********************************/
+              if (cat.frame==9){ // Reset frame counter
+
+                  cat.frame = 0;
+
+              } else { // update frame counter
+
+                  cat.frame++;
+
+              }
+              if (cat.direction==1){ // Facing Right
+
+                  // Draw character
+                  cc.drawImage(cat.still[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
+
+              } else { // Facing Left
+
+                  cc.save();
+                  // Flip the character image
+                  cc.translate(cat.x + cat.width/2, 0);
+                  cc.scale(-1, 1);
+                  cc.translate(-(cat.x + cat.width/2), 0);
+                  //Draw the character
+                  cc.drawImage(cat.still[cat.frame],cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
+                  cc.restore();
+
+              }
+
+          }
+        }
+
+        cc.drawImage(scene.layers[i], 0,cc.canvas.height-scene.height,scene.width,scene.height); // Display layer
+
+      }
+
+      /*******************************
+      * Draw Arrow Keys              *
+      ********************************/
+      cc.save();
+      // Flip the character image
+      cc.translate(c.width-c.height/6 + (c.height/6)/2, 0);
+      cc.scale(-1, 1);
+      cc.translate(-(c.width-c.height/6 + (c.height/6)/2), 0);
+
+      cc.drawImage(ui.arrow, c.width-c.height/6,c.height-(c.height/6),c.height/6,c.height/6); // Display layer
+      cc.restore();
+
+      cc.drawImage(ui.arrow, 0,c.height-(c.height/6),c.height/6,c.height/6); // Display layer
+
+    }
+</script>
+</body>
+</html>
