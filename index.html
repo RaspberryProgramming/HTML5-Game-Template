@@ -202,7 +202,17 @@ html, body {
     }
 
     function drawImage(image, x, y, width, height, reverse) {
-      /**/
+      /*
+      Displays image in cc canvas. Reverse functionality was added to reverse
+      images on the fly.
+
+      image: image to be drawn
+      x: x position of image
+      y: y position of image
+      width: width of image
+      height: height of image
+      reverse: if true, the image will be reversed
+      */
       if (reverse){
         // Reversed direction of image
         cc.save(); // Save old image config for later use
