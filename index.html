@@ -24,12 +24,12 @@ html, body {
         slide:[], // Stores array of sliding frames
         frame:0, // Stores which frame is to be displayed
         x:0,
-        y:415,
+        y:0,
         height:271,
         width:250,
         speedx:0,
         speedy:0,
-        direction:1, // 1=right, 2=left
+        direction:2, // 1=right, 2=left
         movement:[0,0,0,0], // [a, s, d, w]
     }
 
@@ -38,7 +38,7 @@ html, body {
       char_layer:0,
       height:1856,
       width:1584,
-      floor:415,
+      floor:390,
     };
 
     mouse = {
@@ -55,7 +55,8 @@ html, body {
           arrow: new Image(),
         };
 
-        ui.arrow.src = "webp/arrow/arrow.webp";
+        ui.arrow.src = "webp/ui/arrow.webp";
+        ui.arrow.id="Test";
 
         c=document.getElementById("gc");
         cc=c.getContext('2d');
@@ -192,6 +193,25 @@ html, body {
       for (i=0; i <= layers-1; i++){
           object.layers[i] = new Image();
           object.layers[i].src = folder+ "Layer_" + i + ".webp";
+      }
+    }
+
+    function drawImage(image, x, y, width, height, reverse) {
+      /**/
+      if (reverse){
+        // Reversed direction of image
+        cc.save(); // Save old image config for later use
+
+        // Flip the character image
+        cc.translate(x + width/2, 0);
+        cc.scale(-1, 1);
+        cc.translate(-(x + width/2), 0);
+
+        cc.drawImage(image, x, y, height, width); // Display Image
+
+        cc.restore(); // Restore Previous config
+      } else {
+        cc.drawImage(image, x, y, height, width); // Display Image
       }
     }
 
@@ -337,18 +357,11 @@ html, body {
             }
             if (cat.direction==1){ // Facing Right
                 // draw the character
-                cc.drawImage(cat.jump[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
+                drawImage(cat.jump[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
 
             } else { // Facing Left
 
-                cc.save();
-                // Flip the character image
-                cc.translate(cat.x + cat.width/2, 0);
-                cc.scale(-1, 1);
-                cc.translate(-(cat.x + cat.width/2), 0);
-                //Draw the character
-                cc.drawImage(cat.jump[cat.frame],cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
-                cc.restore();
+                drawImage(cat.jump[cat.frame],cat.x, cc.canvas.height-cat.y, cat.width, cat.height, true);
 
             }
 
@@ -365,18 +378,11 @@ html, body {
             if (cat.direction==1){ // Facing Right
 
                 // draw the character
-                cc.drawImage(cat.fall[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
+                drawImage(cat.fall[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
 
             } else { // Facing Left
 
-                cc.save();
-                // Flip the character image
-                cc.translate(cat.x + cat.width/2, 0);
-                cc.scale(-1, 1);
-                cc.translate(-(cat.x + cat.width/2), 0);
-                //Draw the character
-                cc.drawImage(cat.fall[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
-                cc.restore();
+                drawImage(cat.fall[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height, true);
 
             }
           } else if (cat.movement[1]){
@@ -394,18 +400,11 @@ html, body {
             }
             if (cat.direction==1){ // Facing Right
                 // draw the character
-                cc.drawImage(cat.slide[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
+                drawImage(cat.slide[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
 
             } else { // Facing Left
 
-                cc.save();
-                // Flip the character image
-                cc.translate(cat.x + cat.width/2, 0);
-                cc.scale(-1, 1);
-                cc.translate(-(cat.x + cat.width/2), 0);
-                //Draw the character
-                cc.drawImage(cat.slide[cat.frame],cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
-                cc.restore();
+                drawImage(cat.slide[cat.frame],cat.x, cc.canvas.height-cat.y, cat.width, cat.height, true);
 
             }
           } else if (cat.y == scene.floor && cat.movement[0] != 0 || cat.movement[2] != 0){
@@ -424,19 +423,11 @@ html, body {
             }
             if (cat.direction==1){ // Facing Right
                 // draw the character
-                cc.drawImage(cat.walk[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
+                drawImage(cat.walk[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
 
             } else { // Facing Left
 
-                cc.save();
-                // Flip the character image
-                cc.translate(cat.x + cat.width/2, 0);
-                cc.scale(-1, 1);
-                cc.translate(-(cat.x + cat.width/2), 0);
-                //Draw the character
-                cc.drawImage(cat.walk[cat.frame],cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
-                cc.restore();
-
+                drawImage(cat.walk[cat.frame],cat.x, cc.canvas.height-cat.y, cat.width, cat.height, true);
 
             }
           } else {
@@ -455,18 +446,10 @@ html, body {
               if (cat.direction==1){ // Facing Right
 
                   // Draw character
-                  cc.drawImage(cat.still[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
+                  drawImage(cat.still[cat.frame], cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
 
               } else { // Facing Left
-
-                  cc.save();
-                  // Flip the character image
-                  cc.translate(cat.x + cat.width/2, 0);
-                  cc.scale(-1, 1);
-                  cc.translate(-(cat.x + cat.width/2), 0);
-                  //Draw the character
-                  cc.drawImage(cat.still[cat.frame],cat.x, cc.canvas.height-cat.y, cat.width, cat.height);
-                  cc.restore();
+                  drawImage(cat.still[cat.frame],cat.x, cc.canvas.height-cat.y, cat.width, cat.height, true);
 
               }
 
@@ -478,20 +461,18 @@ html, body {
       }
 
       /*******************************
-      * Draw Arrow Keys              *
+      * Draw UI Elements             *
       ********************************/
-      cc.save();
-      // Flip the character image
-      cc.translate(c.width-c.height/6 + (c.height/6)/2, 0);
-      cc.scale(-1, 1);
-      cc.translate(-(c.width-c.height/6 + (c.height/6)/2), 0);
+      // Left Arrow
+      drawImage(ui.arrow, c.width-c.height/6,c.height-(c.height/6),c.height/6,c.height/6, true); // Display layer
 
-      cc.drawImage(ui.arrow, c.width-c.height/6,c.height-(c.height/6),c.height/6,c.height/6); // Display layer
-      cc.restore();
+      // Right Arrow
+      drawImage(ui.arrow, 0,c.height-(c.height/6),c.height/6,c.height/6); // Display layer
 
-      cc.drawImage(ui.arrow, 0,c.height-(c.height/6),c.height/6,c.height/6); // Display layer
+
 
     }
+
 </script>
 </body>
 </html>
