@@ -16,6 +16,11 @@ html, body {
 
 <canvas id="gc"></canvas>
 <script>
+    // Default Settings
+    settings = {
+      touch: false, // Determines if touch controls are visible
+    }
+
     cat = {
         still:[], // Stores array of still frames
         walk:[], // Stores array of walking frames
@@ -215,11 +220,24 @@ html, body {
       }
     }
 
+    function isInsideUI(element, x, y){
+      /*
+      Determines whether given position exists within a UI element's location
+
+      element: element object. See ui variable's elements to see format
+      x: x position of given position
+      y: y position of given position
+      */
+      return  x >= element.x &&
+              y >= element.y &&
+              x <= element.x+element.width &&
+              y <= element.height+element.y;
+}
+
 
     function update(){
       /*
       Updates the canvas based on a set interval
-
       */
 
       /*******************************
@@ -227,28 +245,23 @@ html, body {
       ********************************/
 
       if (mouse.y != -99999) {
-        if (mouse.x >= 0 && mouse.y >= c.height-(c.height/6) && mouse.x <= c.height/6 && mouse.y <= c.height){
+        if (settings.touch && isInsideUI(ui.left_arrow, mouse.x, mouse.y)){
 
           cat.movement[0] = 1;
           cat.direction = 2;
 
-        } else if (mouse.x >= c.width-c.height/6 && mouse.y >= c.height-(c.height/6) && mouse.x <= c.width && mouse.y <= c.height){
+        } else if (settings.touch && isInsideUI(ui.right_arrow, mouse.x, mouse.y)){
 
           cat.movement[2] = 1;
           cat.direction = 1;
 
-        } else {
-          console.log(mouse.x);
-          console.log(mouse.y);
-          console.log(mouse.x >= 0);
-          console.log(mouse.y >= c.height-(c.height/6));
-          console.log(mouse.x <= c.height/6);
-          console.log(mouse.y <= c.height);
         }
         mouse.waiting = true;
       } else if (mouse.waiting){
-        cat.movement = [0,0,0,0];
-        mouse.waiting = false;
+        if(settings.touch) {
+          cat.movement = [0,0,0,0];
+          mouse.waiting = false;
+        }
       }
 
       /*******************************
@@ -465,6 +478,7 @@ html, body {
       ********************************/
       // Left Arrow
       drawImage(ui.arrow, c.width-c.height/6,c.height-(c.height/6),c.height/6,c.height/6, true); // Display layer
+      if (settings.touch){
 
       // Right Arrow
       drawImage(ui.arrow, 0,c.height-(c.height/6),c.height/6,c.height/6); // Display layer
