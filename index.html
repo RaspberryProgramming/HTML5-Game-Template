@@ -53,28 +53,64 @@ html, body {
     };
 
     window.onload = function(){
-        scene = forest_scene;
-        loadCharacterAnimations("cat", cat); // Load Cat animations
-        loadScene("forest", 2, forest_scene); // Load Forest Scene
-        ui = {
-          arrow: new Image(),
-        };
-
-        ui.arrow.src = "webp/ui/arrow.webp";
-        ui.arrow.id="Test";
-
+        // Initialize canvas
         c=document.getElementById("gc");
         cc=c.getContext('2d');
         setInterval(update, 1000/30);
 
-        //Update Canvas Size
+        // Update Canvas Size
         cc.canvas.width  = window.innerWidth;
         cc.canvas.height = window.innerHeight;
+
+        // Load characters and scenes
+        scene = forest_scene;
+        loadCharacterAnimations("cat", cat); // Load Cat animations
+        loadScene("forest", 2, forest_scene); // Load Forest Scene
+
+        // Load UI elements
+        ui = {
+          right_arrow:{
+            im:new Image(),
+            height:-1,
+            width:-1,
+            x:-1,
+            y:-1,
+          },
+          left_arrow:{
+            im:new Image(),
+            height:-1,
+            width:-1,
+            x:-1,
+            y:-1,
+          },
+        };
+        // Right Arrow for touch Controls
+        ui.right_arrow.im.src = "webp/ui/arrow.webp";
+        ui.right_arrow.height = c.height/6;
+        ui.right_arrow.width = c.height/6;
+        ui.right_arrow.x = c.width-c.height/6;
+        ui.right_arrow.y = c.height-(c.height/6);
+        // Left Arrow for touch Controls
+        ui.left_arrow.im.src = "webp/ui/arrow.webp";
+        ui.left_arrow.height = c.height/6;
+        ui.left_arrow.width = c.height/6;
+        ui.left_arrow.x = 0
+        ui.left_arrow.y = c.height-(c.height/6);
 
         window.addEventListener('resize', function(){
           //Update Canvas Size
           cc.canvas.width  = window.innerWidth;
           cc.canvas.height = window.innerHeight;
+          ui.right_arrow.height = c.height/6;
+          ui.right_arrow.width = c.height/6;
+          ui.left_arrow.height = c.height/6;
+          ui.left_arrow.width = c.height/6;
+          ui.right_arrow.x = c.width-c.height/6;
+          ui.right_arrow.y = c.height-(c.height/6);
+          ui.left_arrow.x = 0
+          ui.left_arrow.y = c.height-(c.height/6);
+          console.log(ui.left_arrow.y);
+          console.log(c.height-(c.height/6));
         }, false);
 
         document.addEventListener('keydown', function(e){
@@ -486,13 +522,14 @@ html, body {
       /*******************************
       * Draw UI Elements             *
       ********************************/
-      // Left Arrow
-      drawImage(ui.arrow, c.width-c.height/6,c.height-(c.height/6),c.height/6,c.height/6, true); // Display layer
       if (settings.touch){
 
-      // Right Arrow
-      drawImage(ui.arrow, 0,c.height-(c.height/6),c.height/6,c.height/6); // Display layer
+        // Left Arrow
+        drawImage(ui.left_arrow.im, ui.left_arrow.x, ui.left_arrow.y, ui.left_arrow.width, ui.left_arrow.height); // Display layer
 
+        // Right Arrow
+        drawImage(ui.right_arrow.im, ui.right_arrow.x, ui.right_arrow.y, ui.right_arrow.width, ui.right_arrow.height, true); // Display layer
+      }
 
 
     }
