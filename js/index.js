@@ -3,6 +3,8 @@ settings = {
   touch: false, // Determines if touch controls are visible
 }
 
+images_loading = 0;
+
 /*******************************
 * Cat character object         *
 ********************************/
@@ -74,6 +76,7 @@ window.onload = function(){
         y:-1,
       },
     };
+
     // Right Arrow for touch Controls
     ui.right_arrow.im.src = "webp/ui/arrow.webp";
     ui.right_arrow.height = c.height/6;
@@ -86,9 +89,6 @@ window.onload = function(){
     ui.left_arrow.width = c.height/6;
     ui.left_arrow.x = 0
     ui.left_arrow.y = c.height-(c.height/6);
-
-    c.style.display = "block";
-    document.getElementById("loading-screen").style.display = "none";
 
 
     window.addEventListener('resize', function(){
@@ -165,7 +165,7 @@ window.onload = function(){
       mouse.x = -99999;
       mouse.y = -99999;
 
-    })
+    });
     c.addEventListener('touchstart', (e) => {
       console.log("Touch Start");
       mouse.x = e.touches[0].pageX
@@ -177,9 +177,18 @@ window.onload = function(){
       mouse.x = -99999;
       mouse.y = -99999;
 
-    })
+    });
 }
 
+function checkLoading(event){
+  console.log(event.srcElement);
+  images_loading--;
+  console.log(images_loading);
+  if(images_loading == 0){
+    c.style.display = "block";
+    document.getElementById("loading-screen").style.display = "none";
+  }
+}
 
 function loadCharacterAnimations(name, object){
     /*
@@ -196,24 +205,39 @@ function loadCharacterAnimations(name, object){
     for (i=1; i <= 10; i++){
         object.still[i-1] = new Image();
         object.still[i-1].src = folder + "Idle (" + i + ").webp";
+        images_loading++;
+        object.still[i-1].onload = checkLoading;
     }
+
     for (i=1; i <= 10; i++){
         object.walk[i-1] = new Image();
         object.walk[i-1].src = folder + "Walk (" + i + ").webp";
+        images_loading++;
+        object.walk[i-1].onload = checkLoading;
     }
+
     for (i=1; i <= 8; i++){
         object.jump[i-1] = new Image();
         object.jump[i-1].src = folder + "Jump (" + i + ").webp";
+        images_loading++;
+        object.jump[i-1].onload = checkLoading;
     }
+
     for (i=1; i <= 8; i++){
         object.fall[i-1] = new Image();
         object.fall[i-1].src = folder + "Fall (" + i + ").webp";
+        images_loading++;
+        object.fall[i-1].onload = checkLoading;
+
     }
     for (i=1; i <= 10; i++){
         object.slide[i-1] = new Image();
         object.slide[i-1].src = folder + "Slide (" + i + ").webp";
+        images_loading++;
+        object.slide[i-1].onload = checkLoading;
     }
 }
+
 function loadScene(scene, layers, object){
   /*
   Loads layers webp folder based on object name. These layers are loaded into the object.
@@ -228,6 +252,9 @@ function loadScene(scene, layers, object){
   for (i=0; i <= layers-1; i++){
       object.layers[i] = new Image();
       object.layers[i].src = folder+ "Layer_" + i + ".webp";
+      images_loading++;
+      object.layers[i].onload = checkLoading;
+
   }
 }
 
